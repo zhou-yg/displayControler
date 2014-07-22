@@ -143,95 +143,40 @@
 			};
 		}();
 
-		function toArray(_arg,_len,_prop){
+		function toArray(_arg){
 
 			if(_arg.constructor == Object){
 				
-				var vArr = new Array();
-
-				if(_prop){
-
-					var kArr = new Array();
-
-					for(k in _arg){
-						kArr.push(k);
-						vArr.push(_arg[k]);
-					}
-					_arg = [kArr,vArr];
-
-				}else{
-					for(k in _arg){
-						vArr.push(_arg[k]);
-					}
-					_arg = vArr;
-				}
 			}
 			if(_arg.constructor == Array){
 				
-				if(!_len){
-					return _arg;
-				}
-				if(_arg.length != _len){
-					throw new Error("the argument's child elements's num is illegal");
-					return;
-				}
 			}
 			return _arg;		
 		};
 		var parseArg = function(_arg){
 
 			_arg = toArray(_arg,2);
-			//横向样式表
-			//arr1 每个li的css类名，循环补不足
-			//arr2 li内部的html布局标签，循环补不足
-			//arr3 li内部的html布局标签的样式类名，循环补不足
-			//arr4  横向的条目数，横向的条目数，每条横向有数列，填充于arr2的标签中，循环补不足
-			var arr1 = toArray(_arg[0],2);
-			var arr2 = arr1[0];
-			var arr3 = arr1[1];
-			var arr4 = _arg[1];
-			  
-			arr1 = toArray(arr2);
+			//最新版本的参数 ,适用于2层结构
+			//arr1   = [{li:{a:l,b:l2}},{div:"c",span:"d"}];
+			//或 arr1 = [{li:[l,l2],{div:"c",span:"d"}];
+			//arr2  = [{v:0,k:"A"},{v:1,k:"B"},{v:2,k:"C"},{v:3,k:"D"},{v:4,k:"e"},{v:5,k:"f"},{v:6,k:"g"},{v:7,k:"h"},{v:8,k:"i"},{v:9,k:"j"}];
+			//转化
+			//arr1 = ["li"]
+			//arr2 = ["l","l2"];
+			//arr3 = ["div","span"]
+			//arr4 = ["c","d"];
+			//arr5 = [[0,A],[1,B],[2,C],[3,D],[4,E],[5,F],[6,G],[7,H],[8,I],[9,J]];
 			
-			arr2 = toArray(arr3,0,true)[0];
-			arr3 = toArray(arr3,0,true)[1];
-
-			arr4 = arr4.map(function(el){
-				return toArray(el);
-			});
-			var l = arr4[0].length;
-			
-			var r = arr1.every(function(el){
-				return typeof el == "string"; 
-			});
-			if(!r){
-				throw new Error("arr1 not all elements are string");
-			}
-			r = arr2.every(function(el){
-				return typeof el == "string"; 
-			});
-			if(!r){
-				throw new Error("arr2 not all elements are string");
-			}
-			r = arr3.every(function(el){
-				return typeof el == "string"; 
-			});
-			if(!r){
-				throw new Error("arr3 not all elements are string");
-			}
-		    r = arr4.every(function(el){
-				return el.length==l;
-			});
-			if(!r){
-				throw new Error("some array's length in data is illegal");
-			}
-
-			_arg = [arr1,arr2,arr3,arr4];
-			
-			console.log(arr1);
-			console.log(arr2);
-			console.log(arr3);
-			console.log(arr4);
+			//arr1 容器下的第一层子局部标签,循环补不足
+			//arr2 第一层子局部标签的css样式类名，循环补不足
+			//arr3 容器下的第二层布局标签，数据的容身之处，循环补不足
+			//arr4  第二层布局标签的css类名，循环补不足
+			//arr5 数据，二位数组存放
+			var arr1 = 1;
+			var arr2 = 2;
+			var arr3 = 3;
+			var arr4 = 4;
+			var arr5 = 5;
 			
 			return _arg;
 		};
@@ -255,7 +200,7 @@
 			
 			var dataArr = parseArg(_arg);
 			
-			if(dataArr){
+			if(false){
 				
 				var liStyles      = dataArr[0];
 				var liChildren    = dataArr[1];
