@@ -4,41 +4,76 @@
 		<title>displayControl</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<style type="text/css">
-		
+			*{
+				margin: 0;
+			}
 			ul{
 				background: #4174CE;
 				width:225px;
+				vertical-align:top;
+				display: inline-block;
 			}
 			li{
+				list-style: none;
+			}
+			.l{
 				background:#93CFFD;
 				margin-bottom: 5px;
 				width:200px;
 				height:50px;
 				list-style: none;
+				
+				position: relative;
+				top: 0;
+			}
+			.l2{
+				background:#DBC5F7;
+				margin-bottom: 5px;
+				width:200px;
+				height:50px;
+				list-style: none;
+				position: relative;
+				top: 0;
+			}
+			.c{
+				color:#FFFFFF;
+			}
+			.d{
+				color:purple;
 			}
 		</style>
 	</head>
 	<body>
 		<div id="container">
+			<ul>
+				<li class="l"><span class="c">0</span><span class="d">A</span></li>
+				<li class="l">1</li>
+				<li class="l">2</li>
+				<li class="l">3</li>
+				<li class="l">4</li>
+				<li class="l">5</li>
+				<li class="l">6</li>
+				<li class="l">7</li>
+				<li class="l">8</li>
+				<li class="l">9</li>
+			</ul>
 			<ul id="ul_id">
-				<li>0</li>
-				<li>1</li>
-				<li>2</li>
-				<li>3</li>
-				<li>4</li>
-				<li>5</li>
-				<li>6</li>
-				<li>7</li>
-				<li>8</li>
-				<li>9</li>
 			</ul>
 		</div>
 	</body>
 	<script type="text/javascript" src="jquery1x.js"></script>
 	<script type="text/javascript" src="underscore-min.js"></script>
 	<script type="text/javascript" src="backbone-min.js"></script>
+	<script type="text/javascript" src="shifty.js"></script>
 	<script type="text/javascript" src="display.js"></script>
 	<script type="text/javascript">
+	var arr1 = [{a:"l",b:"l2"},{div:"c",span:"d"}];
+	var arr2 = [{v:0,k:"A"},{v:1,k:"B"},{v:2,k:"C"},{v:3,k:"D"},{v:4,k:"e"},{v:5,k:"f"},{v:6,k:"g"},{v:7,k:"h"},{v:8,k:"i"},{v:9,k:"j"}];
+	//arr1 = ["l","l2"];
+	//arr2 = ["c","d"];
+	//arr3 = ["div","span"]
+	//arr4 = [[0],[1],[2],[3],[4],[5],[6],[7],[8],[9]];
+	init("load",[arr1,arr2]);
 	
 	</script>
 </html>
