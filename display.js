@@ -22,13 +22,17 @@
 				},
 				initialize : function(id) {
 					
+					this.on("change:o",function(_o){
+						_o.set({visibility:false});	
+					});
+					
 					this.bind("change:visibility",function(_o,_prop){
 						if(_prop){
-							this.get("o").style.visibility = "visible";
-							this.set({opacity:0});
+							_o.get("o").style.visibility = "visible";
+							_o.set({opacity:0});
 						}else{
-							this.get("o").style.visibility = "hidden";
-							this.set({opacity:1});
+							_o.get("o").style.visibility = "hidden";
+							_o.set({opacity:1});
 						}
 					});
 					this.on("change:top",function(_o,_prop){
@@ -37,7 +41,7 @@
 							_prop = _prop + "px";
 						}
 						
-						this.get("o").style.top = _prop;
+						_o.get("o").style.top = _prop;
 					});
 					this.on("change:left",function(_o,_prop){
 						
@@ -45,11 +49,11 @@
 							_prop = _prop + "px";
 						}
 						
-						this.get("o").style.left = _prop;
+						_o.get("o").style.left = _prop;
 					});
 					this.on("change:opacity",function(_o,_prop){
 						
-						this.get("o").style.opacity = _prop;
+						_o.get("o").style.opacity = _prop;
 					});
 				},
 				move:function(_left){
@@ -222,20 +226,42 @@
 
 			return [arr1,arr2,arr3,arr4,arr5];
 		};
-		function show(_arg){
-			
-			var i = 0;
+		function show(_i){
+
+			_i = _i?_i:0;
 			
 			var task = function(){
-				if(i==10){
+				if(_i==10){
 					return;
 				}
-				ulContainer.at(i).display();
-				ulContainer.at(i).move(25);
-				i++;
+				ulContainer.at(_i).display();
+				_i++;
 				setTimeout(task,250);
 			};
 			task();
+		}
+		function animate(_arg){
+			
+			var container = (_arg instanceof HTMLElement)?_arg:(typeof _arg=="string"?document.getElementById(_arg):undefined);
+			
+			if(container){
+				
+				ulContainer = new backbone.Items();
+				
+				var tags = container.children;
+				
+				_.each(tags,function(el){
+					
+					var tag = new backbone.SingleItem();
+					tag.set({o:el});
+					ulContainer.add(tag);
+				});
+				
+				show();
+				
+			}else{
+				throw new Error("can't get dom");
+			}
 		}
 		//根据解析后的参数，利用backbone
 		function load(_arg){
@@ -251,7 +277,7 @@
 				var data           = dataArr[4];
 				
 				ulContainer = new backbone.Items();
-				//讲backbone的model 装载进 backbone的model collection中
+				//backbone的model 装载进 backbone的model collection中
 				for (var i=0; i < data.length; i++) {
 					
 					var tagOne = new backbone.SingleItem();
@@ -261,7 +287,6 @@
 					var d= data[i];
 					
 					tagOne.setProp(t,ts,tagChildren,tagchildStyles,d);
-					
 					ulContainer.add(tagOne);
 				};
 
@@ -275,7 +300,7 @@
 		
 		function init(_t,_arg){
 			
-			var fn = {"load":load,"show":show};
+			var fn = {"load":load,"animate":animate};
 			if(typeof _t == "string"){
 				return fn[_t]?fn[_t](_arg):fn[0](_arg);
 			}else{
