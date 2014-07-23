@@ -1,7 +1,9 @@
 ( function(_global) {
 		//model collection object
 		var ulContainer;
-	
+		var startTime;
+		var DISPLAY_INTERVAL = 250;
+		
 		var backbone = function() {
 			
 			var SingleItem = Backbone.Model.extend({
@@ -28,10 +30,10 @@
 					
 					this.bind("change:visibility",function(_o,_prop){
 						if(_prop){
-							_o.get("o").style.visibility = "visible";
+							_o.get("o").style.display = "block";
 							_o.set({opacity:0});
 						}else{
-							_o.get("o").style.visibility = "hidden";
+							_o.get("o").style.display = "none";
 							_o.set({opacity:1});
 						}
 					});
@@ -226,19 +228,34 @@
 
 			return [arr1,arr2,arr3,arr4,arr5];
 		};
-		function show(_i){
+		function displayTask(_i,callBack){
+			if(_i==10){
+				return;
+			}
+			ulContainer.at(_i).display();
 
+			if(callBack){
+				callBack(++_i);
+			}
+		};
+		function animateShow(_i){
+			
 			_i = _i?_i:0;
 			
-			var task = function(){
-				if(_i==10){
-					return;
-				}
-				ulContainer.at(_i).display();
-				_i++;
-				setTimeout(task,250);
-			};
-			task();
+			setTimeout(displayTask,DISPLAY_INTERVAL,_i,animateShow);
+		}
+		function loadShow(_i){
+
+			_i = _i?_i:0;
+			startTime = startTime?startTime:(+new Date());
+			
+			var nowTime = +new Date(); 
+			
+			if(nowTime - startTime > DISPLAY_INTERVAL * _i){
+				displayTask(_i);
+			}else{
+				setTimeout(displayTask,DISPLAY_INTERVAL * _i - (nowTime - startTime),_i);
+			}
 		}
 		function animate(_arg){
 			
@@ -250,14 +267,14 @@
 				
 				var tags = container.children;
 				
-				_.each(tags,function(el){
+				_.each(tags,function(_el,_i){
 					
 					var tag = new backbone.SingleItem();
-					tag.set({o:el});
+					tag.set({o:_el});
 					ulContainer.add(tag);
 				});
 				
-				show();
+				animateShow();
 				
 			}else{
 				throw new Error("can't get dom");
@@ -269,6 +286,8 @@
 			var dataArr = parseArg(_arg);
 			
 			if(!!dataArr){
+
+				var ul = document.getElementById("ul_id");
 				
 				var tagNames       = dataArr[0];
 				var tagStyles      = dataArr[1];
@@ -288,13 +307,13 @@
 					
 					tagOne.setProp(t,ts,tagChildren,tagchildStyles,d);
 					ulContainer.add(tagOne);
-				};
 
-				var ulId = document.getElementById("ul_id");
-				ulContainer.forEach(function(el){
-					ulId.appendChild(el.get("o"));
-				});
-				show();
+					ul.appendChild(tagOne.get("o"));
+					
+					(function(_i){
+						loadShow(_i);
+					}(i));
+				};
 			}
 		}
 		
