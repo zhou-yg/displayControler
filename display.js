@@ -1,34 +1,44 @@
-( function(_global) {
+var Display = function(_global) {
+		
 		//model collection object
 		var ulContainer;
 		var startTime;
-		var DISPLAY_INTERVAL = 250;
+		var DISPLAY_INTERVAL    = 250;
+		var TRANS_DURATION      = 350;
+		var APPEARANCE_DURATION = 1000;
+		var childLength = 0;
 		
 		var backbone = function() {
 			
 			var SingleItem = Backbone.Model.extend({
 
 				defaults : {
+					
 					o:"",
+					
 					tagName:"",
 					tagStyle:"",
 					childTags:[],
 					childStyles:[],
+					
 					data:[],
+					
 					top:0,
 					DEFAULT_TOP:25,
 					left:0,
 					DEFAULT_LEFT:25,
 					opacity:1,
 					visibility:true
+				
 				},
 				initialize : function(id) {
 					
 					this.on("change:o",function(_o){
+
 						_o.set({visibility:false});	
 					});
-					
 					this.bind("change:visibility",function(_o,_prop){
+
 						if(_prop){
 							_o.get("o").style.display = "block";
 							_o.set({opacity:0});
@@ -39,18 +49,16 @@
 					});
 					this.on("change:top",function(_o,_prop){
 
-						if(typeof _prop == "number"){
+						if(_.isNumber(_prop)){
 							_prop = _prop + "px";
 						}
-						
 						_o.get("o").style.top = _prop;
 					});
 					this.on("change:left",function(_o,_prop){
 						
-						if(typeof _prop == "number"){
+						if(_.isNumber(_prop)){
 							_prop = _prop + "px";
 						}
-						
 						_o.get("o").style.left = _prop;
 					});
 					this.on("change:opacity",function(_o,_prop){
@@ -59,6 +67,7 @@
 					});
 				},
 				move:function(_left){
+					
 					if(!_left){
 						_left = this.get("DEFAULT_LEFT");
 					}
@@ -72,7 +81,7 @@
 						
 						from:{left:0},
 						to:{left:_left},
-						duration:350,
+						duration:TRANS_DURATION,
 						
 						step:function(state){
 							obj.set({left:state.left});
@@ -80,6 +89,7 @@
 					});
 				},
 				down:function(_top){
+					
 					if(!_top){
 						_top = this.get("DEFAULT_TOP");
 					}
@@ -92,7 +102,7 @@
 						
 						from:{top:0},
 						to:{top:_top},
-						duration:350,
+						duration:TRANS_DURATION,
 						
 						step:function(state){
 							obj.set({top:state.top});
@@ -107,9 +117,11 @@
 					obj.set({visibility:true});
 	
 					t.tween({
+						
 						from:{opacity:0},
 						to:{opacity:1},
-						duration:1000,
+						duration:APPEARANCE_DURATION,
+						
 						step:function(state){
 							obj.set({opacity:state.opacity});
 						}
@@ -167,7 +179,7 @@
 				if(_arg[k].constructor == Object){
 					_arg[k] = parseObject(_arg[k],false);
 				}
-				if(_arg[k].constructor == Array){
+				if(_.isArray(_arg[k])){
 					_arg[k].forEach(function(el){
 						vArr.push(el);
 					});
@@ -185,10 +197,11 @@
 			_generation++;
 			
 			if(_arg.constructor == Object){
+				
 				_arg = parseObject(_arg,_onlyV);
 			}
-			
-			if(_arg.constructor == Array){
+			if(_.isArray(_arg)){
+				
 				_arg = _arg.map(function(el){
 					return parseArray(el,_generation,_onlyV);
 				});
@@ -225,11 +238,12 @@
 			arr1 = arr1[0][0];
 
 			var arr5 = parseArray(_arg[1],0,false);
-
+			
 			return [arr1,arr2,arr3,arr4,arr5];
 		};
 		function displayTask(_i,callBack){
-			if(_i==10){
+			
+			if(_i==childLength){
 				return;
 			}
 			ulContainer.at(_i).display();
@@ -247,6 +261,7 @@
 		function loadShow(_i){
 
 			_i = _i?_i:0;
+			
 			startTime = startTime?startTime:(+new Date());
 			
 			var nowTime = +new Date(); 
@@ -259,20 +274,21 @@
 		}
 		function animate(_arg){
 			
-			var container = (_arg instanceof HTMLElement)?_arg:(typeof _arg=="string"?document.getElementById(_arg):undefined);
+			var container = _.isElement(_arg)?_arg:(_.isString(_arg)?document.getElementById(_arg):undefined);
 			
 			if(container){
 				
 				ulContainer = new backbone.Items();
 				
 				var tags = container.children;
-				
 				_.each(tags,function(_el,_i){
 					
 					var tag = new backbone.SingleItem();
 					tag.set({o:_el});
 					ulContainer.add(tag);
 				});
+
+				childLength = tags.length;
 				
 				animateShow();
 				
@@ -297,13 +313,12 @@
 				
 				ulContainer = new backbone.Items();
 				//backbone的model 装载进 backbone的model collection中
-				for (var i=0; i < data.length; i++) {
+				for (; childLength < data.length; childLength++) {
 					
 					var tagOne = new backbone.SingleItem();
-					
-					var t  = tagNames[i%tagNames.length];
-					var ts = tagStyles[i%tagStyles.length];
-					var d= data[i];
+					var t      = tagNames[childLength%tagNames.length];
+					var ts     = tagStyles[childLength%tagStyles.length];
+					var d      = data[childLength];
 					
 					tagOne.setProp(t,ts,tagChildren,tagchildStyles,d);
 					ulContainer.add(tagOne);
@@ -312,7 +327,7 @@
 					
 					(function(_i){
 						loadShow(_i);
-					}(i));
+					}(childLength));
 				};
 			}
 		}
@@ -320,11 +335,13 @@
 		function init(_t,_arg){
 			
 			var fn = {"load":load,"animate":animate};
-			if(typeof _t == "string"){
+			
+			if(_.isString(_t)){
+				
 				return fn[_t]?fn[_t](_arg):fn[0](_arg);
 			}else{
 				throw new Error("invalid type of arguments in function named init");
 			}
 		}
-		_global.init = init;
-	}(window)); 
+		this.init = init;
+};
