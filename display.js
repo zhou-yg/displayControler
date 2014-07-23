@@ -292,6 +292,9 @@ var Display = function(_global) {
 				
 				animateShow();
 				
+				if(container.style.display == "none" || container.style.display == ""){
+					container.style.display = "block";
+				}
 			}else{
 				throw new Error("can't get dom");
 			}
@@ -335,7 +338,11 @@ var Display = function(_global) {
 		function init(_t,_arg){
 			
 			var fn = {"load":load,"animate":animate};
-			
+
+			if(!_arg){
+				throw new Error("there is no argument in Function init");
+				return;
+			}
 			if(_.isString(_t)){
 				
 				return fn[_t]?fn[_t](_arg):fn[0](_arg);
