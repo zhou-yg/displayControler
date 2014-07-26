@@ -11,7 +11,7 @@
 				background: #4174CE;
 				width:225px;
 				vertical-align:top;
-				display: inline-block;
+				float: left;
 			}
 			li{
 				list-style: none;
@@ -88,8 +88,8 @@
 	//arr5 = [[0,A],[1,B],[2,C],[3,D],[4,E],[5,F],[6,G],[7,H],[8,I],[9,J]];
 	var arr1 = [{li:["l","l2"]},{div:"c",span:"d"}];
 	var arr2 = [{v:0,k:"A"},{v:1,k:"B"},{v:2,k:"C"},{v:3,k:"D"},{v:4,k:"e"},{v:5,k:"f"},{v:6,k:"g"},{v:7,k:"h"},{v:8,k:"i"},{v:9,k:"j"}];
-	new Display().init("load",[arr1,arr2]);
+	new Display().init("load",[arr1,arr2],'ul_id');
 	
-	new Display().init("animate","tmp");
+	//new Display().init("animate","tmp",'ul_id');
 	</script>
 </html>

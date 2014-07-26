@@ -1,12 +1,53 @@
 var Display = function(_global) {
 		
 		//model collection object
+		var domContainer;
 		var ulContainer;
 		var startTime;
 		var DISPLAY_INTERVAL    = 250;
 		var TRANS_DURATION      = 350;
 		var APPEARANCE_DURATION = 1000;
 		var childLength = 0;
+		
+		var elQueue;
+		
+		var Queue = function(_arr){
+			
+			var index = 0;
+			var arr;
+			
+			var isinit = false;
+			
+			if(_.isArray(_arr) && _arr){
+				arr = _arr;
+				isinit = true;
+			}else{
+				arr = new Array();
+			}
+			this.getInit = function(){
+				return isinit;
+			}
+			this.setInit = function(){
+				isinit = false;
+			}
+			this.queue = function(){
+				
+				return arr[index];
+			}
+			this.dequeue = function(){
+				
+				index = index<=0?index:--index;
+				
+				return arr.shift();
+			};
+			
+			this.push = function(_el){
+				if( _el || _el==0 ){
+					arr.push(_el);
+					isinit = true;
+				}
+			}
+		};
 		
 		var backbone = function() {
 			
@@ -241,22 +282,27 @@ var Display = function(_global) {
 			
 			return [arr1,arr2,arr3,arr4,arr5];
 		};
-		function displayTask(_i,callBack){
+		function displayTask(){
 			
-			if(_i==childLength){
+		};
+		function animateShow(){
+			
+			var i = elQueue.dequeue();
+			
+			console.log("isinit",elQueue.getInit(),'i:',i);
+			
+			if(elQueue.getInit() && (!i && i!=0)){
+				elQueue.setInit();
 				return;
 			}
-			ulContainer.at(_i).display();
-
-			if(callBack){
-				callBack(++_i);
-			}
-		};
-		function animateShow(_i){
 			
-			_i = _i?_i:0;
+		    var el = ulContainer.at(i);
+		    if(el){
+		    	domContainer.appendChild(el.get('o'));
+		    	el.display();
+		    }
 			
-			setTimeout(displayTask,DISPLAY_INTERVAL,_i,animateShow);
+			setTimeout(animateShow,DISPLAY_INTERVAL);
 		}
 		function loadShow(_i){
 
@@ -274,11 +320,9 @@ var Display = function(_global) {
 		}
 		function animate(_arg){
 			
-			var container = _.isElement(_arg)?_arg:(_.isString(_arg)?document.getElementById(_arg):undefined);
+			domContainer = _.isElement(_arg)?_arg:(_.isString(_arg)?document.getElementById(_arg):undefined);
 			
 			if(container){
-				
-				ulContainer = new backbone.Items();
 				
 				var tags = container.children;
 				_.each(tags,function(_el,_i){
@@ -306,36 +350,29 @@ var Display = function(_global) {
 			
 			if(!!dataArr){
 
-				var ul = document.getElementById("ul_id");
-				
 				var tagNames       = dataArr[0];
 				var tagStyles      = dataArr[1];
 				var tagChildren    = dataArr[2];
 				var tagchildStyles = dataArr[3];
 				var data           = dataArr[4];
 				
-				ulContainer = new backbone.Items();
 				//backbone的model 装载进 backbone的model collection中
 				for (; childLength < data.length; childLength++) {
 					
-					var tagOne = new backbone.SingleItem();
+					var tag = new backbone.SingleItem();
 					var t      = tagNames[childLength%tagNames.length];
 					var ts     = tagStyles[childLength%tagStyles.length];
 					var d      = data[childLength];
 					
-					tagOne.setProp(t,ts,tagChildren,tagchildStyles,d);
-					ulContainer.add(tagOne);
-
-					ul.appendChild(tagOne.get("o"));
+					tag.setProp(t,ts,tagChildren,tagchildStyles,d);
+					ulContainer.add(tag);
 					
-					(function(_i){
-						loadShow(_i);
-					}(childLength));
+					elQueue.push(childLength);
 				};
 			}
 		}
 		
-		function init(_t,_arg){
+		function init(_t,_arg,_containerId){
 			
 			var fn = {"load":load,"animate":animate};
 
@@ -344,6 +381,17 @@ var Display = function(_global) {
 				return;
 			}
 			if(_.isString(_t)){
+				
+				elQueue = new Queue();
+				
+				domContainer = document.getElementById(_containerId);
+				if(!domContainer){
+					throw new Error('container is not existed.Maybe the id is wrong');
+					return;
+				}
+				ulContainer = new backbone.Items();
+
+				animateShow();
 				
 				return fn[_t]?fn[_t](_arg):fn[0](_arg);
 			}else{
