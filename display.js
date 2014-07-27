@@ -276,7 +276,7 @@ var Display = function(_global) {
 			var arr3 = arr1[1][0];
 			var arr4 = arr1[1][1];
 			arr1 = arr1[0][0];
-
+ 
 			var arr5 = parseArray(_arg[1],0,false);
 			
 			return [arr1,arr2,arr3,arr4,arr5];
@@ -285,14 +285,12 @@ var Display = function(_global) {
 			
 			var i = elQueue.dequeue();
 
-			console.log("isinit",elQueue.getInit(),'i:',i);
-			
 			if(elQueue.getInit() && (!i && i!=0)){
 				elQueue.setInit();
 				return;
 			}
 			
-			if(domContainer.style.display == "none"){
+			if(domContainer.style.display == "none" || domContainer.style.display == ""){
 				domContainer.style.display == "block";
 			}
 			
@@ -300,14 +298,12 @@ var Display = function(_global) {
 		    if(el){
 		    	el.display();
 		    }
-			
+
 			setTimeout(animateShow,DISPLAY_INTERVAL);
 		}
 		function loadShow(){
 
 			var i = elQueue.dequeue();
-			
-			console.log("isinit",elQueue.getInit(),'i:',i);
 			
 			if(elQueue.getInit() && (!i && i!=0)){
 				elQueue.setInit();
