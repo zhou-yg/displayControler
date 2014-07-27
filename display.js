@@ -37,10 +37,8 @@ var Display = function(_global) {
 			this.dequeue = function(){
 				
 				index = index<=0?index:--index;
-				
 				return arr.shift();
 			};
-			
 			this.push = function(_el){
 				if( _el || _el==0 ){
 					arr.push(_el);
@@ -251,22 +249,23 @@ var Display = function(_global) {
 		};
 		var parseArg = function(_arg){
 
-			//最新版本的参数 ,适用于2层结构
-			//arr1   = [{li:{a:"l",b:"l2"}},{div:"c",span:"d"}];
-			//或 arr1 = [{li:[l,l2],{div:"c",span:"d"}];
-			//arr2  = [{v:0,k:"A"},{v:1,k:"B"},{v:2,k:"C"},{v:3,k:"D"},{v:4,k:"e"},{v:5,k:"f"},{v:6,k:"g"},{v:7,k:"h"},{v:8,k:"i"},{v:9,k:"j"}];
-			//转化
-			//arr1 = ["li"]
-			//arr2 = ["l","l2"];
-			//arr3 = ["div","span"]
-			//arr4 = ["c","d"];
-			//arr5 = [[0,A],[1,B],[2,C],[3,D],[4,E],[5,F],[6,G],[7,H],[8,I],[9,J]];
+			/*最新版本的参数 ,适用于2层结构
+			arr1   = [{li:{a:"l",b:"l2"}},{div:"c",span:"d"}];
+			或 arr1 = [{li:[l,l2],{div:"c",span:"d"}];
+			arr2  = [{v:0,k:"A"},{v:1,k:"B"},{v:2,k:"C"},{v:3,k:"D"},{v:4,k:"e"},{v:5,k:"f"},{v:6,k:"g"},{v:7,k:"h"},{v:8,k:"i"},{v:9,k:"j"}];
+			转化
+			arr1 = ["li"]
+			arr2 = ["l","l2"];
+			arr3 = ["div","span"]
+			arr4 = ["c","d"];
+			arr5 = [[0,A],[1,B],[2,C],[3,D],[4,E],[5,F],[6,G],[7,H],[8,I],[9,J]];
 			
-			//arr1 容器下的第一层子局部标签,循环补不足
-			//arr2 第一层子局部标签的css样式类名，循环补不足
-			//arr3 容器下的第二层布局标签，数据的容身之处，循环补不足
-			//arr4  第二层布局标签的css类名，循环补不足
-			//arr5 数据，二位数组存放
+			arr1 容器下的第一层子局部标签,循环补不足
+			arr2 第一层子局部标签的css样式类名，循环补不足
+			arr3 容器下的第二层布局标签，数据的容身之处，循环补不足
+			arr4  第二层布局标签的css类名，循环补不足
+			arr5 数据，二位数组存放
+			*/
 			if(_arg.constructor != Array || _arg.length != 2){
 				throw new Error("argument has illegal length or it isn't Array");
 				return;
@@ -282,11 +281,30 @@ var Display = function(_global) {
 			
 			return [arr1,arr2,arr3,arr4,arr5];
 		};
-		function displayTask(){
-			
-		};
 		function animateShow(){
 			
+			var i = elQueue.dequeue();
+
+			console.log("isinit",elQueue.getInit(),'i:',i);
+			
+			if(elQueue.getInit() && (!i && i!=0)){
+				elQueue.setInit();
+				return;
+			}
+			
+			if(domContainer.style.display == "none"){
+				domContainer.style.display == "block";
+			}
+			
+		    var el = ulContainer.at(i);
+		    if(el){
+		    	el.display();
+		    }
+			
+			setTimeout(animateShow,DISPLAY_INTERVAL);
+		}
+		function loadShow(){
+
 			var i = elQueue.dequeue();
 			
 			console.log("isinit",elQueue.getInit(),'i:',i);
@@ -302,43 +320,22 @@ var Display = function(_global) {
 		    	el.display();
 		    }
 			
-			setTimeout(animateShow,DISPLAY_INTERVAL);
-		}
-		function loadShow(_i){
-
-			_i = _i?_i:0;
-			
-			startTime = startTime?startTime:(+new Date());
-			
-			var nowTime = +new Date(); 
-			
-			if(nowTime - startTime > DISPLAY_INTERVAL * _i){
-				displayTask(_i);
-			}else{
-				setTimeout(displayTask,DISPLAY_INTERVAL * _i - (nowTime - startTime),_i);
-			}
+			setTimeout(loadShow,DISPLAY_INTERVAL);
 		}
 		function animate(_arg){
 			
-			domContainer = _.isElement(_arg)?_arg:(_.isString(_arg)?document.getElementById(_arg):undefined);
-			
-			if(container){
+			if(domContainer){
 				
-				var tags = container.children;
+				var tags = domContainer.children;
 				_.each(tags,function(_el,_i){
 					
 					var tag = new backbone.SingleItem();
 					tag.set({o:_el});
 					ulContainer.add(tag);
+					
+					elQueue.push(_i);
 				});
 
-				childLength = tags.length;
-				
-				animateShow();
-				
-				if(container.style.display == "none" || container.style.display == ""){
-					container.style.display = "block";
-				}
 			}else{
 				throw new Error("can't get dom");
 			}
@@ -366,17 +363,19 @@ var Display = function(_global) {
 					
 					tag.setProp(t,ts,tagChildren,tagchildStyles,d);
 					ulContainer.add(tag);
-					
+
 					elQueue.push(childLength);
 				};
+				domContainer.style.display = "block";
 			}
 		}
 		
 		function init(_t,_arg,_containerId){
 			
 			var fn = {"load":load,"animate":animate};
+			var ani = {"load":loadShow,"animate":animateShow};
 
-			if(!_arg){
+			if(!_arg && _arg!= 'null'){
 				throw new Error("there is no argument in Function init");
 				return;
 			}
@@ -389,11 +388,12 @@ var Display = function(_global) {
 					throw new Error('container is not existed.Maybe the id is wrong');
 					return;
 				}
+				
 				ulContainer = new backbone.Items();
 
-				animateShow();
+				ani[_t]?ani[_t]():ani[0]();
+				fn[_t]?fn[_t](_arg):fn[0](_arg);
 				
-				return fn[_t]?fn[_t](_arg):fn[0](_arg);
 			}else{
 				throw new Error("invalid type of arguments in function named init");
 			}
