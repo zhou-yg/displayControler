@@ -1,6 +1,7 @@
 var Display = function(_global) {
 		
 		//model collection object
+		var domContainer;
 		var ulContainer;
 		var startTime;
 		var childLength = 0;
@@ -10,6 +11,44 @@ var Display = function(_global) {
 		var DISPLAY_INTERVAL    = 250;
 		var TRANS_DURATION      = 350;
 		var APPEARANCE_DURATION = 1000;
+		
+		var elQueue;
+		
+		var Queue = function(_arr){
+			
+			var index = 0;
+			var arr;
+			
+			var isinit = false;
+			
+			if(_.isArray(_arr) && _arr){
+				arr = _arr;
+				isinit = true;
+			}else{
+				arr = new Array();
+			}
+			this.getInit = function(){
+				return isinit;
+			}
+			this.setInit = function(){
+				isinit = false;
+			}
+			this.queue = function(){
+				
+				return arr[index];
+			}
+			this.dequeue = function(){
+				
+				index = index<=0?index:--index;
+				return arr.shift();
+			};
+			this.push = function(_el){
+				if( _el || _el==0 ){
+					arr.push(_el);
+					isinit = true;
+				}
+			}
+		};
 		
 		var backbone = function() {
 			
@@ -213,22 +252,23 @@ var Display = function(_global) {
 		};
 		var parseArg = function(_arg){
 
-			//最新版本的参数 ,适用于2层结构
-			//arr1   = [{li:{a:"l",b:"l2"}},{div:"c",span:"d"}];
-			//或 arr1 = [{li:[l,l2],{div:"c",span:"d"}];
-			//arr2  = [{v:0,k:"A"},{v:1,k:"B"},{v:2,k:"C"},{v:3,k:"D"},{v:4,k:"e"},{v:5,k:"f"},{v:6,k:"g"},{v:7,k:"h"},{v:8,k:"i"},{v:9,k:"j"}];
-			//转化
-			//arr1 = ["li"]
-			//arr2 = ["l","l2"];
-			//arr3 = ["div","span"]
-			//arr4 = ["c","d"];
-			//arr5 = [[0,A],[1,B],[2,C],[3,D],[4,E],[5,F],[6,G],[7,H],[8,I],[9,J]];
+			/*最新版本的参数 ,适用于2层结构
+			arr1   = [{li:{a:"l",b:"l2"}},{div:"c",span:"d"}];
+			或 arr1 = [{li:[l,l2],{div:"c",span:"d"}];
+			arr2  = [{v:0,k:"A"},{v:1,k:"B"},{v:2,k:"C"},{v:3,k:"D"},{v:4,k:"e"},{v:5,k:"f"},{v:6,k:"g"},{v:7,k:"h"},{v:8,k:"i"},{v:9,k:"j"}];
+			转化
+			arr1 = ["li"]
+			arr2 = ["l","l2"];
+			arr3 = ["div","span"]
+			arr4 = ["c","d"];
+			arr5 = [[0,A],[1,B],[2,C],[3,D],[4,E],[5,F],[6,G],[7,H],[8,I],[9,J]];
 			
-			//arr1 容器下的第一层子局部标签,循环补不足
-			//arr2 第一层子局部标签的css样式类名，循环补不足
-			//arr3 容器下的第二层布局标签，数据的容身之处，循环补不足
-			//arr4  第二层布局标签的css类名，循环补不足
-			//arr5 数据，二位数组存放
+			arr1 容器下的第一层子局部标签,循环补不足
+			arr2 第一层子局部标签的css样式类名，循环补不足
+			arr3 容器下的第二层布局标签，数据的容身之处，循环补不足
+			arr4  第二层布局标签的css类名，循环补不足
+			arr5 数据，二位数组存放
+			*/
 			if(_arg.constructor != Array || _arg.length != 2){
 				throw new Error("argument has illegal length or it isn't Array");
 				return;
@@ -239,65 +279,62 @@ var Display = function(_global) {
 			var arr3 = arr1[1][0];
 			var arr4 = arr1[1][1];
 			arr1 = arr1[0][0];
-
+ 
 			var arr5 = parseArray(_arg[1],0,false);
 			
 			return [arr1,arr2,arr3,arr4,arr5];
 		};
-		function displayTask(_i,callBack){
+		function animateShow(){
 			
-			if(_i==childLength){
+			var i = elQueue.dequeue();
+
+			if(elQueue.getInit() && (!i && i!=0)){
+				elQueue.setInit();
 				return;
 			}
-			ulContainer.at(_i).display();
-
-			if(callBack){
-				callBack(++_i);
+			
+			if(domContainer.style.display == "none" || domContainer.style.display == ""){
+				domContainer.style.display == "block";
 			}
-		};
-		function animateShow(_i){
 			
-			_i = _i?_i:0;
-			
-			setTimeout(displayTask,DISPLAY_INTERVAL,_i,animateShow);
+		    var el = ulContainer.at(i);
+		    if(el){
+		    	el.display();
+		    }
+
+			setTimeout(animateShow,DISPLAY_INTERVAL);
 		}
-		function loadShow(_i){
+		function loadShow(){
 
-			_i = _i?_i:0;
+			var i = elQueue.dequeue();
 			
-			startTime = startTime?startTime:(+new Date());
-			
-			var nowTime = +new Date(); 
-			
-			if(nowTime - startTime > DISPLAY_INTERVAL * _i){
-				displayTask(_i);
-			}else{
-				setTimeout(displayTask,DISPLAY_INTERVAL * _i - (nowTime - startTime),_i);
+			if(elQueue.getInit() && (!i && i!=0)){
+				elQueue.setInit();
+				return;
 			}
+			
+		    var el = ulContainer.at(i);
+		    if(el){
+		    	domContainer.appendChild(el.get('o'));
+		    	el.display();
+		    }
+			
+			setTimeout(loadShow,DISPLAY_INTERVAL);
 		}
 		function animate(_arg){
 			
-			var container = _.isElement(_arg)?_arg:(_.isString(_arg)?document.getElementById(_arg):undefined);
-			
-			if(container){
+			if(domContainer){
 				
-				ulContainer = new backbone.Items();
-				
-				var tags = container.children;
+				var tags = domContainer.children;
 				_.each(tags,function(_el,_i){
 					
 					var tag = new backbone.SingleItem();
 					tag.set({o:_el});
 					ulContainer.add(tag);
+					
+					elQueue.push(_i);
 				});
 
-				childLength = tags.length;
-				
-				animateShow();
-				
-				if(container.style.display == "none" || container.style.display == ""){
-					container.style.display = "block";
-				}
 			}else{
 				throw new Error("can't get dom");
 			}
@@ -309,46 +346,53 @@ var Display = function(_global) {
 			
 			if(!!dataArr){
 
-				var ul = document.getElementById("ul_id");
-				
 				var tagNames       = dataArr[0];
 				var tagStyles      = dataArr[1];
 				var tagChildren    = dataArr[2];
 				var tagchildStyles = dataArr[3];
 				var data           = dataArr[4];
 				
-				ulContainer = new backbone.Items();
 				//backbone的model 装载进 backbone的model collection中
 				for (; childLength < data.length; childLength++) {
 					
-					var tagOne = new backbone.SingleItem();
+					var tag = new backbone.SingleItem();
 					var t      = tagNames[childLength%tagNames.length];
 					var ts     = tagStyles[childLength%tagStyles.length];
 					var d      = data[childLength];
 					
-					tagOne.setProp(t,ts,tagChildren,tagchildStyles,d);
-					ulContainer.add(tagOne);
+					tag.setProp(t,ts,tagChildren,tagchildStyles,d);
+					ulContainer.add(tag);
 
-					ul.appendChild(tagOne.get("o"));
-					
-					(function(_i){
-						loadShow(_i);
-					}(childLength));
+					elQueue.push(childLength);
 				};
+				domContainer.style.display = "block";
 			}
 		}
 		
-		function init(_t,_arg){
+		function init(_t,_arg,_containerId){
 			
 			var fn = {"load":load,"animate":animate};
+			var ani = {"load":loadShow,"animate":animateShow};
 
-			if(!_arg){
+			if(!_arg && _arg!= 'null'){
 				throw new Error("there is no argument in Function init");
 				return;
 			}
 			if(_.isString(_t)){
 				
-				return fn[_t]?fn[_t](_arg):fn[0](_arg);
+				elQueue = new Queue();
+				
+				domContainer = document.getElementById(_containerId);
+				if(!domContainer){
+					throw new Error('container is not existed.Maybe the id is wrong');
+					return;
+				}
+				
+				ulContainer = new backbone.Items();
+
+				ani[_t]?ani[_t]():ani[0]();
+				fn[_t]?fn[_t](_arg):fn[0](_arg);
+				
 			}else{
 				throw new Error("invalid type of arguments in function named init");
 			}
