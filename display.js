@@ -3,10 +3,13 @@ var Display = function(_global) {
 		//model collection object
 		var ulContainer;
 		var startTime;
+		var childLength = 0;
+		//显示队列
+		var childQueue;
+
 		var DISPLAY_INTERVAL    = 250;
 		var TRANS_DURATION      = 350;
 		var APPEARANCE_DURATION = 1000;
-		var childLength = 0;
 		
 		var backbone = function() {
 			
