@@ -29,14 +29,14 @@ var Display = function(_global) {
 			}
 			this.getInit = function(){
 				return isinit;
-			}
+			};
 			this.setInit = function(){
 				isinit = false;
-			}
+			};
 			this.queue = function(){
 				
 				return arr[index];
-			}
+			};
 			this.dequeue = function(){
 				
 				index = index<=0?index:--index;
@@ -47,7 +47,7 @@ var Display = function(_global) {
 					arr.push(_el);
 					isinit = true;
 				}
-			}
+			};
 		};
 		
 		var backbone = function() {
@@ -353,6 +353,7 @@ var Display = function(_global) {
 				var data           = dataArr[4];
 				
 				//backbone的model 装载进 backbone的model collection中
+				domContainer.innerHTML = "";
 				for (; childLength < data.length; childLength++) {
 					
 					var tag = new backbone.SingleItem();
