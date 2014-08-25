@@ -201,7 +201,7 @@ var Display = function(_global) {
 
 			var Items = Backbone.Collection.extend({
 				
-				model : "SingleItem",
+				model : "SingleItem"
 			});
 			
 			return {
